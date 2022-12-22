@@ -17,9 +17,28 @@ exports.getDataFromBigQuery = async (req, res, next) => {
     query: sqlQuery,
     location: "US",
   };
+  //const [rows] = await bigqueryClient.query(query);
+  const [job] = await bigqueryClient.createQueryJob(query);
 
-  // Run the query
-  const [rows] = await bigqueryClient.query(query);
+  const [rows] = await job.getQueryResults();
+
+  return res.json(rows);
+};
+
+exports.getLanguageFromBigQuery = async (req, res, next) => {
+  const bigqueryClient = new BigQuery(options);
+
+  const sqlQuery =
+    "SELECT arr.name AS LANGUAGE,sum(arr.bytes) AS total_bytes FROM `bigquery-public-data.github_repos.languages`,UNNEST(LANGUAGE) arr GROUP BY LANGUAGE ORDER BY total_bytes DESC LIMIT 10";
+
+  const query = {
+    query: sqlQuery,
+    location: "US",
+  };
+  //const [rows] = await bigqueryClient.query(query);
+  const [job] = await bigqueryClient.createQueryJob(query);
+
+  const [rows] = await job.getQueryResults();
 
   return res.json(rows);
 };
